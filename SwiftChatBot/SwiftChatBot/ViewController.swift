@@ -1,151 +1,77 @@
 //
 //  ViewController.swift
-//  chatbotTutorial
+//  SwiftChatBot
 //
-//  Created by mac on 2017/4/11.
+//  Created by mac on 2017/4/17.
 //  Copyright © 2017年 Meow.minithon.teama. All rights reserved.
 //
 
 import UIKit
-import RealmSwift
 import JSQMessagesViewController
 import ApiAI
+import RealmSwift
 
 struct User {
     let id: String
-    let name: String
+    let Name: String
 }
 
 class ViewController: JSQMessagesViewController {
-    
+
     var messages = [JSQMessage]()
     
-    var outputTextView:UITextView!
-    
-    let user1 = User(id: "1", name: "Michael")
-    let user2 = User(id: "2", name: "Chatbot")
+    let user1 = User(id: "1", Name: "Michael")
+    let user2 = User(id: "2", Name: "ChatBot")
     
     var currentUser: User {
         return user1
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        // Do any additional setup after loading the view, typically from a nib.
+        
         self.senderId = currentUser.id
-        self.senderDisplayName = currentUser.name
+        self.senderDisplayName = currentUser.Name
         
         queryAllMessages()
     }
-
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
 
+
 }
 
-// user - defined functions
-extension ViewController {
-    
-    //add改成store
-    func addMessage(_ senderName: String, _ senderID: String, _ senderMessage: String) {
-        let message = Message()
-        message.senderName = senderName
-        message.senderID = senderID
-        message.senderMessage = senderMessage
-        
-        //write to Realm
-        let realm = try! Realm()
-        
-        try! realm.write {
-            realm.add(message)
-        }
-    }
-    
-    func queryAllMessages() {
-        let realm = try! Realm()
-        
-        let messages = realm.objects(Message.self)
-        //讀進來是集合
-        //for every message in the Realm
-        for message in messages {
-            // make each message as a JQMessage.
-            let msg = JSQMessage(senderId: message.senderID, displayName: message.senderName, text: message.senderMessage)
-            // append it to the JQMessage Array
-            self.messages.append(msg!)
-        }
-    }
-    
-    func handleSendMessageToBot(_ message: String) {
-        let request = ApiAI.shared().textRequest()
-        
-        request?.query = message
-        
-        request?.setMappedCompletionBlockSuccess({ (request, response) in
-            let response = response as! AIResponse
-            
-            if let responseFromAI = response.result.fulfillment.speech as? String {
-                self.handleStoreBotMsg(responseFromAI)
-            }
-        }, failure: { (request, error) in
-            print(error!)
-        })
-        
-        // send message to bot.
-        ApiAI.shared().enqueue(request)
-    }
-    
-    //re
-    func handleStoreBotMsg(_ botMsg: String) {
-        //store message into Realm
-        addMessage(user2.name, user2.id, botMsg)
-        
-        //store message into JSQMessage array
-        let botMessage = JSQMessage(senderId: user2.id, displayName: user2.name, text: botMsg)
-        messages.append(botMessage!)
-        finishSendingMessage()
-    }
-    
-}
-
-//functions for JSQMessagesCollectionViewDataSource protocol
+// JSQMessagesCollectionViewDataSource protocol
 extension ViewController {
     
     // MARK: - 訊息印出來
     override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
-        //print("Hello")
-    
-        self.addMessage(senderDisplayName, senderId, text)
-        
-        // store message into JSQMessage Array
-        
-        let message = JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text)
-        
-        messages.append(message!)
-        
-        handleSendMessageToBot(text)
-        
-        finishSendingMessage()
-        
-        /*
         if let message = JSQMessage(senderId: senderId, displayName: senderDisplayName, text: text) {
-            messages += [message]
+            messages.append(message)
             self.finishSendingMessage(animated: true)
             sendTextToAgent(text: text)
         }
-         */
         
-        
+    }
+    
+    // MARK: - 多少訊息顯示
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    // MARK: - 顯示哪個訊息
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
+        return messages[indexPath.row]
     }
     
     // MARK: - 定義好顯示使用者名稱
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, attributedTextForCellTopLabelAt indexPath: IndexPath!) -> NSAttributedString! {
-        
         let message = messages[indexPath.row]
         let messageUserName = message.senderDisplayName
-        
         return NSAttributedString(string: messageUserName!)
     }
     
@@ -156,14 +82,12 @@ extension ViewController {
     
     //MARK: - 頭像
     override func collectionView(_ collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAt indexPath: IndexPath!) -> JSQMessageAvatarImageDataSource! {
-        
         let message = messages[indexPath.row]
         
         if currentUser.id == message.senderId {
             return JSQMessagesAvatarImageFactory.avatarImage(with: UIImage(named:"SongHyekyo")!, diameter: 30)
         } else {
             return JSQMessagesAvatarImageFactory.avatarImage(with: UIImage(named:"KiAile")!, diameter: 30)
-
         }
     }
     
@@ -179,46 +103,53 @@ extension ViewController {
             return bubbleFactory?.incomingMessagesBubbleImage(with: .blue)
         }
     }
-    
-    // MARK: - 多少訊息顯示
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return messages.count
-    }
-    
-    // MARK: - 顯示哪個訊息
-    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
-        return messages[indexPath.row]
-    }
+
 }
 
-
-//MARK:- APPCODE
 extension ViewController {
     
+    //MARK: - write to Realm
+    func storeMessage(_ senderName: String, _ senderID: String, _ senderMessage: String) {
+        let message = Message()
+        message.senderName = senderName
+        message.senderID = senderID
+        message.senderMessage = senderMessage
+        
+        let realm = try! Realm()
+        try! realm.write {
+            realm.add(message)
+        }
+    }
+    
+    //MARK: - query from Realm
+    func queryAllMessages() {
+        let realm = try! Realm()
+        let messages = realm.objects(Message.self)
+        //讀進來是集合
+        //for every message in the Realm
+        for message in messages {
+            // make each message as a JQMessage.
+            let msg = JSQMessage(senderId: message.senderID, displayName: message.senderName, text: message.senderMessage)
+            // append it to the JQMessage Array
+            self.messages.append(msg!)
+        }
+    }
+    //MARK: - send message to bot.
     func sendTextToAgent(text: String) {
         if text == "" { return }
         //由於是文字訊息，先準備一個textRequest
         let request = ApiAI.shared().textRequest()
-        
         //設定要發送給Agent的訊息
         request?.query = text
-        
         // 由於是Async Request, 要先設定Completion Block
-        
         request?.setMappedCompletionBlockSuccess({ (request, response) in
             guard let response = response as? AIResponse else {
                 return
             }
             
             if let textResponse = response.result.fulfillment.speech {
-                self.outputTextView.text = self.outputTextView.text.appending("\(textResponse)\n")
+                self.handleStoreBotMsg(textResponse)
             }
-            
-            if let action = response.result.action {
-                self.outputTextView.text = self.outputTextView.text.appending("Action: \(action)\n\n")
-            }
-            let range = NSMakeRange(self.outputTextView.text.characters.count - 1, 0)
-            self.outputTextView.scrollRangeToVisible(range)
         }, failure: { (request, error) in
             if let error = error {
                 print(error.localizedDescription)
@@ -226,5 +157,16 @@ extension ViewController {
         })
         ApiAI.shared().enqueue(request)
     }
+    
+    //MARK: - store message into Realm
+    func handleStoreBotMsg(_ botMsg: String) {
+        storeMessage(user2.Name, user2.id, botMsg)
+        
+        //store message into JSQMessage array
+        let botMessage = JSQMessage(senderId: user2.id, displayName: user2.Name, text: botMsg)
+        messages.append(botMessage!)
+        finishSendingMessage(animated: true)
+    }
+    
 }
 

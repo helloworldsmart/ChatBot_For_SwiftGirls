@@ -1,0 +1,47 @@
+PODS:
+  - ApiAI (0.5.5):
+    - ApiAI/AudioFileConverter (= 0.5.5)
+    - ApiAI/Core (= 0.5.5)
+    - ApiAI/ResponseMapping (= 0.5.5)
+    - ApiAI/UIKit (= 0.5.5)
+    - ApiAI/UserEntities (= 0.5.5)
+    - ApiAI/VoiceFileRequest (= 0.5.5)
+    - ApiAI/VoiceRequest (= 0.5.5)
+  - ApiAI/AudioFileConverter (0.5.5):
+    - ApiAI/Core
+  - ApiAI/Core (0.5.5)
+  - ApiAI/ResponseMapping (0.5.5):
+    - ApiAI/Core
+  - ApiAI/UIKit (0.5.5):
+    - ApiAI/Core
+    - ApiAI/VoiceRequest
+  - ApiAI/UserEntities (0.5.5):
+    - ApiAI/Core
+  - ApiAI/VoiceFileRequest (0.5.5):
+    - ApiAI/Core
+  - ApiAI/VoiceRequest (0.5.5):
+    - ApiAI/Core
+  - JSQMessagesViewController (7.3.4):
+    - JSQSystemSoundPlayer (~> 2.0.1)
+  - JSQSystemSoundPlayer (2.0.1)
+  - Realm (2.1.2):
+    - Realm/Headers (= 2.1.2)
+  - Realm/Headers (2.1.2)
+  - RealmSwift (2.1.2):
+    - Realm (= 2.1.2)
+
+DEPENDENCIES:
+  - ApiAI
+  - JSQMessagesViewController
+  - RealmSwift
+
+SPEC CHECKSUMS:
+  ApiAI: f812efe6bff8b6d980b15ffd40c3e74ae8f467c4
+  JSQMessagesViewController: 39fed975e3c9f8eba7292071e29eeb541d105e66
+  JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
+  Realm: efe855f4d977c8ce5a82d3116d9f1ff155a6550c
+  RealmSwift: 17d6ee30b6f9df86364408c2197492e33bfea567
+
+PODFILE CHECKSUM: c0dfbb7a2c8fc0c6bf477f1007429154bd80da99
+
+COCOAPODS: 1.2.0.beta.3
