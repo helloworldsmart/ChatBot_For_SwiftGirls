@@ -155,6 +155,28 @@ extension ViewController {
                 print(error.localizedDescription)
             }
         })
+        
+        //MARK: response是Any?型態，所以guard判別是否nil.串接api資料常遇到~
+        let ok: SuccesfullResponseBlock! = { (request, response) in
+            guard let response = response as? AIResponse  else {
+                return
+            }
+            if let textResponse = response.result.fulfillment.speech {
+                self.handleStoreBotMsg(textResponse)
+            }
+        }
+        
+        let failure: FailureResponseBlock! = { (request, error) in
+            if let error = error {
+                print(error.localizedDescription)
+            }
+        }
+        
+        request?.setMappedCompletionBlockSuccess(ok, failure: failure)
+        
+        
+        
+        
         ApiAI.shared().enqueue(request)
     }
     
@@ -169,4 +191,6 @@ extension ViewController {
     }
     
 }
+
+
 
